@@ -2,15 +2,6 @@ import collections
 import numpy as np
 import math
 import copy
-import torch
-import torch.multiprocessing as mp
-import datetime
-import logging
-from tqdm import tqdm
-from anytree import NodeMixin, RenderTree
-from utils.utils import load_pickle, save_as_pickle
-from net.net import AlphaNet
-from game.game import Game
 
 
 class MCTSNode():
@@ -84,7 +75,7 @@ class MCTSNode():
         self.child_priors = c_p
 
     def decode_n_move_pieces(self, board, move):
-        board.drop_piece(move)
+        board.move_back(move)
         return board
 
     def maybe_add_child(self, move):
@@ -106,7 +97,7 @@ class MCTSNode():
 
 
 def decode_n_move_pieces(self, board, move):
-    board.drop_piece(move)
+    board.move_back(move)
     return board
 
 

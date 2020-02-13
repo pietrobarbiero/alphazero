@@ -66,7 +66,7 @@ class Connect4(Game):
                 self.current_state[row - 2, column] = "X"
                 self.player = 0
 
-    def drop_piece(self, column):
+    def move_back(self, column):
         if self.current_state[0, column] != " ":
             return "Invalid move"
         else:

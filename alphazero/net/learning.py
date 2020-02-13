@@ -1,4 +1,3 @@
-from alpha_net_c4 import ConnectNet, AlphaLoss, board_data
 import os
 import pickle
 import datetime
@@ -9,6 +8,7 @@ from torch.utils.data import DataLoader
 from torch.nn.utils import clip_grad_norm_
 import matplotlib.pyplot as plt
 import logging
+from .net import AlphaDataset, AlphaLoss
 
 logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
@@ -65,7 +65,7 @@ def train(net, dataset, optimizer, scheduler, start_epoch, cpu, args, iteration)
     net.train()
     criterion = AlphaLoss()
 
-    train_set = board_data(dataset)
+    train_set = AlphaDataset(dataset)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=0, pin_memory=False)
     losses_per_epoch = load_results(iteration + 1)
 

@@ -25,7 +25,7 @@ class AlphaNet(nn.Module):
             self.conv = ConvBlock(self.action_size, self.game_state_shape)
         for block in range(self.n_res_blocks):
             setattr(self, "res_%i" % block, ResBlock())
-        self.outblock = OutBlock(self.game_dim)
+        self.outblock = OutBlock(self.game_dim, self.action_size)
 
     def forward(self, s):
         s = self.conv(s)
@@ -73,9 +73,10 @@ class ResBlock(nn.Module):
 
 class OutBlock(nn.Module):
 
-    def __init__(self, game_dim):
+    def __init__(self, game_dim, action_size):
         super(OutBlock, self).__init__()
         self.game_dim = game_dim
+        self.action_size = action_size
 
         self.conv = nn.Conv2d(128, 3, kernel_size=1)  # value head
         self.bn = nn.BatchNorm2d(3)
@@ -85,7 +86,7 @@ class OutBlock(nn.Module):
         self.conv1 = nn.Conv2d(128, 32, kernel_size=1)  # policy head
         self.bn1 = nn.BatchNorm2d(32)
         self.logsoftmax = nn.LogSoftmax(dim=1)
-        self.fc = nn.Linear(self.game_dim * 32, 7)
+        self.fc = nn.Linear(self.game_dim * 32, self.action_size)
 
     def forward(self, s):
         v = F.relu(self.bn(self.conv(s)))  # value head

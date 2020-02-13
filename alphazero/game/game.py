@@ -40,3 +40,7 @@ class Game(ABC):
     @abstractmethod
     def move(self, *args, **kwargs):
         pass
+
+    @abstractmethod
+    def move_back(self, *args, **kwargs):
+        pass
