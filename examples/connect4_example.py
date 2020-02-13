@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../")
+
 from alphazero import learn, evaluate
 from alphazero import run_MCTS
 from alphazero import Connect4
