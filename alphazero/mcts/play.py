@@ -9,6 +9,7 @@ from game.game import Game
 from .search import mcts
 from net.net import AlphaNet
 import torch
+import torch.multiprocessing as mp
 
 logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
@@ -27,7 +28,41 @@ def run_MCTS(args, net_class, game_class, start_idx=0, iteration=0):
     if not os.path.isdir(model_data_dir):
         os.makedirs(model_data_dir)
 
-    if args.MCTS_num_processes == 1:
+    if args.MCTS_num_processes > 1:
+        logger.info("Preparing model for multi-process MCTS...")
+        mp.set_start_method("spawn", force=True)
+        net.share_memory()
+        net.eval()
+
+        current_net_filename = os.path.join(model_data_dir, net_to_play)
+        if os.path.isfile(current_net_filename):
+            checkpoint = torch.load(current_net_filename)
+            net.load_state_dict(checkpoint['state_dict'])
+            logger.info("Loaded %s model." % current_net_filename)
+        else:
+            torch.save({'state_dict': net.state_dict()}, os.path.join(model_data_dir, net_to_play))
+            logger.info("Initialized model.")
+
+        processes = []
+        if args.MCTS_num_processes > mp.cpu_count():
+            num_processes = mp.cpu_count()
+            logger.info(
+                "Required number of processes exceed number of CPUs! Setting MCTS_num_processes to %d" % num_processes)
+        else:
+            num_processes = args.MCTS_num_processes
+
+        logger.info("Spawning %d processes..." % num_processes)
+        with torch.no_grad():
+            for i in range(num_processes):
+                p = mp.Process(target=self_play,
+                               args=(net, game_class, args.num_games_per_MCTS_process, start_idx, i, args.temperature_MCTS, iteration))
+                p.start()
+                processes.append(p)
+            for p in processes:
+                p.join()
+        logger.info("Finished multi-process MCTS!")
+
+    elif args.MCTS_num_processes == 1:
         logging.info("Starting iteration pipeline...")
         logging.info("Preparing model for MCTS...")
         net.eval()
