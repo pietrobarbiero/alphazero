@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.table import Table
-from game import Game
+from ..game import Game
 
 
 class Connect4(Game):

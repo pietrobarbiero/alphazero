@@ -6,8 +6,8 @@ import pickle
 import torch.multiprocessing as mp
 import datetime
 import logging
-from mcts.search import mcts
-from mcts.play import do_decode_n_move_pieces, get_policy
+from ..mcts.search import mcts
+from ..mcts.play import do_decode_n_move_pieces, get_policy
 
 logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)

@@ -4,8 +4,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 import matplotlib
 import numpy as np
-from game import Game
-from abc import ABC
+from ..game import Game
 
 matplotlib.use("Agg")
 

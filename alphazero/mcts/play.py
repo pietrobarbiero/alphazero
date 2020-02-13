@@ -5,9 +5,8 @@ import copy
 import numpy as np
 import datetime
 from utils.utils import load_pickle, save_as_pickle
-from game.game import Game
+from ..game.game import Game
 from .search import mcts
-from net.net import AlphaNet
 import torch
 import torch.multiprocessing as mp
 

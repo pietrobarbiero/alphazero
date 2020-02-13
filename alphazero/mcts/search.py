@@ -1,5 +1,5 @@
 from .node import MCTSNode, DummyNode
-from game.game import Game
+from ..game.game import Game
 import torch
 
 
