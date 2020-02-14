@@ -75,10 +75,10 @@ class arena():
                 checkmate = True
         dataset.append(current_board.encode_state())
         if value == -1:
-            dataset.append(f"{b} as black wins")
+            dataset.append("%s as black wins" % b)
             return b, dataset
         elif value == 1:
-            dataset.append(f"{w} as white wins")
+            dataset.append("%s as white wins" % w)
             return w, dataset
         else:
             dataset.append("Nobody wins")
