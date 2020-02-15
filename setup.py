@@ -7,21 +7,21 @@ import os
 from setuptools import find_packages, setup
 
 # get __version__ from _version.py
-ver_file = os.path.join('skltemplate', '_version.py')
+ver_file = os.path.join('alphazero', '_version.py')
 with open(ver_file) as f:
     exec(f.read())
 
-DISTNAME = 'sklearn-template'
-DESCRIPTION = 'A template for scikit-learn compatible packages.'
+DISTNAME = 'alphazero'
+DESCRIPTION = 'A template for playing games with alphazero.'
 with codecs.open('README.rst', encoding='utf-8-sig') as f:
     LONG_DESCRIPTION = f.read()
-MAINTAINER = 'V. Birodkars, G. Lemaitre'
-MAINTAINER_EMAIL = 'vighneshbirodkar@nyu.edu, g.lemaitre58@gmail.com'
-URL = 'https://github.com/scikit-learn-contrib/project-template'
-LICENSE = 'new BSD'
-DOWNLOAD_URL = 'https://github.com/scikit-learn-contrib/project-template'
+MAINTAINER = 'P. Barbiero'
+MAINTAINER_EMAIL = 'pietro.barbiero@protonmail.com'
+URL = 'https://github.com/pietrobarbiero/alphazero'
+LICENSE = 'Apache 2.0'
+DOWNLOAD_URL = 'https://github.com/pietrobarbiero/alphazero'
 VERSION = __version__
-INSTALL_REQUIRES = ['numpy', 'scipy', 'scikit-learn']
+INSTALL_REQUIRES = ['numpy', 'scipy', 'torch', 'matplotlib', 'pandas', 'tqdm']
 CLASSIFIERS = ['Intended Audience :: Science/Research',
                'Intended Audience :: Developers',
                'License :: OSI Approved',
