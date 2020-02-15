@@ -6,6 +6,8 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.nn.utils import clip_grad_norm_
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import logging
 from .net import AlphaDataset, AlphaLoss
@@ -134,7 +136,7 @@ def train(net, dataset, optimizer, scheduler, start_epoch, cpu, args, iteration)
     ax.set_title("Loss vs Epoch")
     plt.savefig(os.path.join("./model_data/", "Loss_vs_Epoch_iter%d_%s.png" % (
         (iteration + 1), datetime.datetime.today().strftime("%Y-%m-%d"))))
-    plt.show()
+    #plt.show() # line commented to avoid issues with the application running in a screen 
 
 
 def learn(args, net_class, game_class, iteration, new_optim_state):
