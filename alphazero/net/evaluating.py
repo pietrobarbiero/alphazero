@@ -9,10 +9,6 @@ import logging
 from ..mcts.search import mcts
 from ..mcts.play import do_decode_n_move_pieces, get_policy
 
-logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
-logger = logging.getLogger(__file__)
-
 
 def save_as_pickle(filename, data):
     completeName = os.path.join("./evaluator_data/",
@@ -36,7 +32,7 @@ class arena():
         self.game_class = game_class
 
     def play_round(self):
-        logger.info("Starting game round...")
+        logging.info("Starting game round...")
         if np.random.uniform(0, 1) <= 0.5:
             white = self.current
             black = self.best
@@ -86,7 +82,7 @@ class arena():
 
     def evaluate(self, num_games, cpu):
         current_wins = 0
-        logger.info("[CPU %d]: Starting games..." % cpu)
+        logging.info("[CPU %d]: Starting games..." % cpu)
         for i in range(num_games):
             with torch.no_grad():
                 winner, dataset = self.play_round()
@@ -99,7 +95,7 @@ class arena():
         print("Current_net wins ratio: %.5f" % (current_wins / num_games))
         save_as_pickle("wins_cpu_%i" % (cpu),
                        {"best_win_ratio": current_wins / num_games, "num_games": num_games})
-        logger.info("[CPU %d]: Finished arena games!" % cpu)
+        logging.info("[CPU %d]: Finished arena games!" % cpu)
 
 
 def fork_process(arena_obj, num_games, cpu):  # make arena picklable
@@ -107,7 +103,7 @@ def fork_process(arena_obj, num_games, cpu):  # make arena picklable
 
 
 def evaluate(args, iteration_1, iteration_2, net_class, game_class):
-    logger.info("Loading nets...")
+    logging.info("Loading nets...")
     current_net = "%s_iter%d.pth.tar" % (args.neural_net_name, iteration_2)
     best_net = "%s_iter%d.pth.tar" % (args.neural_net_name, iteration_1)
     current_net_filename = os.path.join("./model_data/",
@@ -115,8 +111,8 @@ def evaluate(args, iteration_1, iteration_2, net_class, game_class):
     best_net_filename = os.path.join("./model_data/",
                                      best_net)
 
-    logger.info("Current net: %s" % current_net)
-    logger.info("Previous (Best) net: %s" % best_net)
+    logging.info("Current net: %s" % current_net)
+    logging.info("Previous (Best) net: %s" % best_net)
 
     current_cnet = net_class(game_class())
     best_cnet = net_class(game_class())
@@ -144,11 +140,11 @@ def evaluate(args, iteration_1, iteration_2, net_class, game_class):
         processes = []
         if args.MCTS_num_processes > mp.cpu_count():
             num_processes = mp.cpu_count()
-            logger.info(
+            logging.info(
                 "Required number of processes exceed number of CPUs! Setting MCTS_num_processes to %d" % num_processes)
         else:
             num_processes = args.MCTS_num_processes
-        logger.info("Spawning %d processes..." % num_processes)
+        logging.info("Spawning %d processes..." % num_processes)
         with torch.no_grad():
             for i in range(num_processes):
                 p = mp.Process(target=fork_process, args=(arena(current_cnet, best_cnet, game_class), args.num_evaluator_games, i))

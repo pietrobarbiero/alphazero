@@ -12,10 +12,6 @@ import matplotlib.pyplot as plt
 import logging
 from .net import AlphaDataset, AlphaLoss
 
-logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
-logger = logging.getLogger(__file__)
-
 
 def save_as_pickle(filename, data):
     completeName = os.path.join("./model_data/", filename)
@@ -40,13 +36,13 @@ def load_state(net, optimizer, scheduler, args, iteration, new_optim_state=True)
     if checkpoint != None:
         if (len(checkpoint) == 1) or (new_optim_state == True):
             net.load_state_dict(checkpoint['state_dict'])
-            logger.info("Loaded checkpoint model %s." % checkpoint_path)
+            logging.info("Loaded checkpoint model %s." % checkpoint_path)
         else:
             start_epoch = checkpoint['epoch']
             net.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
             scheduler.load_state_dict(checkpoint['scheduler'])
-            logger.info("Loaded checkpoint model %s, and optimizer, scheduler." % checkpoint_path)
+            logging.info("Loaded checkpoint model %s, and optimizer, scheduler." % checkpoint_path)
     return start_epoch
 
 
@@ -55,7 +51,7 @@ def load_results(iteration):
     losses_path = "./model_data/losses_per_epoch_iter%d.pkl" % iteration
     if os.path.isfile(losses_path):
         losses_per_epoch = load_pickle("losses_per_epoch_iter%d.pkl" % iteration)
-        logger.info("Loaded results buffer")
+        logging.info("Loaded results buffer")
     else:
         losses_per_epoch = []
     return losses_per_epoch
@@ -71,7 +67,7 @@ def train(net, dataset, optimizer, scheduler, start_epoch, cpu, args, iteration)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=0, pin_memory=False)
     losses_per_epoch = load_results(iteration + 1)
 
-    logger.info("Starting training process...")
+    logging.info("Starting training process...")
     update_size = len(train_loader) // 10
     print("Update step size: %d" % update_size)
     for epoch in range(start_epoch, args.num_epochs):
@@ -127,7 +123,7 @@ def train(net, dataset, optimizer, scheduler, start_epoch, cpu, args, iteration)
             if abs(sum(losses_per_epoch[-4:-1])/3-sum(losses_per_epoch[-16:-13])/3) <= 0.00017:
                 break
         '''
-    logger.info("Finished Training!")
+    logging.info("Finished Training!")
     fig = plt.figure()
     ax = fig.add_subplot(222)
     ax.scatter([e for e in range(start_epoch, (len(losses_per_epoch) + start_epoch))], losses_per_epoch)
@@ -141,7 +137,7 @@ def train(net, dataset, optimizer, scheduler, start_epoch, cpu, args, iteration)
 
 def learn(args, net_class, game_class, iteration, new_optim_state):
     # gather data
-    logger.info("Loading training data...")
+    logging.info("Loading training data...")
     data_path = "./datasets/iter_%d/" % iteration
     datasets = []
     for idx, file in enumerate(os.listdir(data_path)):
@@ -149,7 +145,7 @@ def learn(args, net_class, game_class, iteration, new_optim_state):
         with open(filename, 'rb') as fo:
             datasets.extend(pickle.load(fo, encoding='bytes'))
     datasets = np.array(datasets)
-    logger.info("Loaded data from %s." % data_path)
+    logging.info("Loaded data from %s." % data_path)
 
     # train net
     cuda = torch.cuda.is_available()

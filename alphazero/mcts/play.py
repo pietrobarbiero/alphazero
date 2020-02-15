@@ -10,9 +10,6 @@ from .search import mcts
 import torch
 import torch.multiprocessing as mp
 
-logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
-logger = logging.getLogger(__file__)
 
 
 def run_MCTS(args, net_class, game_class, start_idx=0, iteration=0):
@@ -28,7 +25,7 @@ def run_MCTS(args, net_class, game_class, start_idx=0, iteration=0):
         os.makedirs(model_data_dir)
 
     if args.MCTS_num_processes > 1:
-        logger.info("Preparing model for multi-process MCTS...")
+        logging.info("Preparing model for multi-process MCTS...")
         mp.set_start_method("spawn", force=True)
         net.share_memory()
         net.eval()
@@ -37,20 +34,20 @@ def run_MCTS(args, net_class, game_class, start_idx=0, iteration=0):
         if os.path.isfile(current_net_filename):
             checkpoint = torch.load(current_net_filename)
             net.load_state_dict(checkpoint['state_dict'])
-            logger.info("Loaded %s model." % current_net_filename)
+            logging.info("Loaded %s model." % current_net_filename)
         else:
             torch.save({'state_dict': net.state_dict()}, os.path.join(model_data_dir, net_to_play))
-            logger.info("Initialized model.")
+            logging.info("Initialized model.")
 
         processes = []
         if args.MCTS_num_processes > mp.cpu_count():
             num_processes = mp.cpu_count()
-            logger.info(
+            logging.info(
                 "Required number of processes exceed number of CPUs! Setting MCTS_num_processes to %d" % num_processes)
         else:
             num_processes = args.MCTS_num_processes
 
-        logger.info("Spawning %d processes..." % num_processes)
+        logging.info("Spawning %d processes..." % num_processes)
         with torch.no_grad():
             for i in range(num_processes):
                 p = mp.Process(target=self_play,
@@ -59,7 +56,7 @@ def run_MCTS(args, net_class, game_class, start_idx=0, iteration=0):
                 processes.append(p)
             for p in processes:
                 p.join()
-        logger.info("Finished multi-process MCTS!")
+        logging.info("Finished multi-process MCTS!")
 
     elif args.MCTS_num_processes == 1:
         logging.info("Starting iteration pipeline...")
@@ -90,7 +87,7 @@ def self_play(net, game_class, num_games, start_idx, cpu, temperature_mcts, iter
         os.mkdir("datasets/iter_%d" % iteration)
 
     for idxx in tqdm(range(start_idx, num_games + start_idx)):
-        logger.info("[CPU: %d]: Game %d" % (cpu, idxx))
+        logging.info("[CPU: %d]: Game %d" % (cpu, idxx))
         game = game_class()
         checkmate = False
         dataset = []  # to get state, policy, value for neural network training
