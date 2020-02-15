@@ -9,8 +9,8 @@ from argparse import ArgumentParser
 import logging
 
 logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
-logger = logging.getLogger(__file__)
+                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO,
+                    filename='app.log', filemode='w')
 
 
 def main():
@@ -29,7 +29,7 @@ def main():
     parser.add_argument("--max_norm", type=float, default=1.0, help="Clipped gradient norm")
     args = parser.parse_args()
 
-    logger.info("Starting iteration pipeline...")
+    logging.info("Starting iteration pipeline...")
     for i in range(args.iteration, args.total_iterations):
         run_MCTS(args, AlphaNet, Connect4, start_idx=0, iteration=i)
         learn(args, AlphaNet, Connect4, iteration=i, new_optim_state=True)
@@ -37,7 +37,7 @@ def main():
             winner = evaluate(args, i, i + 1, AlphaNet, Connect4)
             counts = 0
             while winner != (i + 1):
-                logger.info("Trained net didn't perform better, generating more MCTS games for retraining...")
+                logging.info("Trained net didn't perform better, generating more MCTS games for retraining...")
                 run_MCTS(args, AlphaNet, Connect4, start_idx=(counts + 1) * args.num_games_per_MCTS_process, iteration=i)
                 counts += 1
                 learn(args, AlphaNet, Connect4, iteration=i, new_optim_state=True)
