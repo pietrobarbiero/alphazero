@@ -1,4 +1,5 @@
 # TODO refactor it later
+import os
 import pandas as pd
 import sys
 
@@ -41,3 +42,4 @@ cmd_line = base_cmd_line + " " + d1 + " " + HERO_BY_DECK[d1] + " " + individual_
 cmd_line += d2 + " " + HERO_BY_DECK[d2] + " " + individual_file_to_commandline(INDIVIDUAL_BY_DECK[d2]) + " "
 
 print(cmd_line)
+os.system(cmd_line)
