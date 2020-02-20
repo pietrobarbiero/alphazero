@@ -1,7 +1,9 @@
 import os
 import json
 import re
-from typing import List, Dict
+from typing import List, Dict, Tuple
+import numpy as np
+import pandas as pd
 
 
 def _parse_card(card: str) -> Dict:
@@ -201,6 +203,44 @@ def parse_sabberstone_game(file_path: str) -> List:
     return state_list
 
 
+def state_to_array(state: Dict) -> np.array:
+
+    # check hero weapon!
+    hero = pd.DataFrame.from_dict(state["hero"], orient='index').T
+    hero.drop(["name", "weapon"], axis=1, inplace=True)
+
+    # transform zones to dataframe
+    columns = ["ID", "position",
+               "attack", "health", "cost"]
+    zone_list = [
+        state["hand"]["cards"],
+        state["board"]["cards"],
+        state["deck"]["cards"],
+    ]
+    # max cards allowed per: hand, board, deck
+    size_list = [10, 7, 30]
+
+    all_cards = pd.DataFrame()
+    for cards, size in zip(zone_list, size_list):
+
+        df_cards = pd.DataFrame(cards)
+        if not df_cards.empty:
+            df_cards.drop("name", axis=1, inplace=True)
+            size -= len(df_cards)
+
+        df_zero = pd.DataFrame(0, index=range(size), columns=columns)
+        df_cards = df_cards.append(df_zero)
+
+        all_cards = all_cards.append(df_cards, ignore_index=True)
+
+    hero_array = hero.values.flatten()
+    card_array = all_cards.values.flatten()
+
+    state_array = np.concatenate([hero_array, card_array])
+
+    return state_array
+
+
 if __name__ == '__main__':
 
     # os.getcwd()
@@ -211,3 +251,14 @@ if __name__ == '__main__':
     file_path = "cmd_out.txt"
 
     state_list = parse_sabberstone_game(file_path)
+
+    dataset = np.array([], dtype=np.int64).reshape(0, 240)
+    for state in state_list:
+        state_array = state_to_array(state)
+
+        if dataset.shape[0] == 0:
+            dataset = state_array[:, np.newaxis].T
+
+        else:
+            state_array = state_array[:, np.newaxis].T
+            dataset = np.append(dataset, state_array, axis=0)
