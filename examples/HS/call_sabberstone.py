@@ -37,12 +37,12 @@ INDIVIDUAL_BY_DECK["AggroPirateWarrior"] = "results/inspyred-individuals-file-07
 
 d1 = "AggroPirateWarrior"
 d2 = "MidrangeJadeShaman"
-number_of_games = 20
+number_of_games = 1
 
 # rest of the command line
 cmd_line = base_cmd_line + " " + d1 + " " + HERO_BY_DECK[d1] + " " + individual_file_to_commandline(INDIVIDUAL_BY_DECK[d1]) + " "
 cmd_line += d2 + " " + HERO_BY_DECK[d2] + " " + individual_file_to_commandline(INDIVIDUAL_BY_DECK[d2]) + " "
-cmd_line += str(number_of_games)
+cmd_line += str(number_of_games) + " > ../../../alphazero/examples/HS/cmd_out.txt"
 
 print(cmd_line)
 os.system(cmd_line)
