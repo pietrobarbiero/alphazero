@@ -21,7 +21,7 @@ def individual_file_to_commandline(ind_file):
     return param
 
 # as there are some issues with the SabberStone C# projects
-sabberstone_base_dir = os.path.abspath("../../SabberStone/core-extensions/SabberStoneCoreAi")
+sabberstone_base_dir = os.path.abspath("../../../SabberStone/core-extensions/SabberStoneCoreAi")
 os.chdir(sabberstone_base_dir)
 
 DECKS = ["RenoKazakusMage", "MidrangeJadeShaman" , "AggroPirateWarrior"]
