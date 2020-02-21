@@ -183,17 +183,14 @@ def _parse_turn(turn: str) -> Dict:
     return game_state
 
 
-def parse_sabberstone_game(file_path: str) -> List:
+def _parse(game: str) -> List:
     """
     Parse HeartStone game using SabberStone output.
 
-    :param file_path: path to file containing verbose game output
+    :param game: detailed command line output of the game
     :return: list of game states
     """
-    with open(file_path, "r") as f:
-        cmd_output = f.read()
-
-    turn_list = cmd_output.split("--- TURN:")
+    turn_list = game.split("--- TURN:")
     turn_list.pop(0)
 
     state_list = []
@@ -204,7 +201,12 @@ def parse_sabberstone_game(file_path: str) -> List:
 
 
 def state_to_array(state: Dict) -> np.array:
+    """
+    Transform state dictionary to numpy array
 
+    :param state: state representation as dictionary
+    :return: state representation as numpy array
+    """
     # check hero weapon!
     hero = pd.DataFrame.from_dict(state["hero"], orient='index').T
     hero.drop(["name", "weapon"], axis=1, inplace=True)
@@ -220,25 +222,119 @@ def state_to_array(state: Dict) -> np.array:
     # max cards allowed per: hand, board, deck
     size_list = [10, 7, 30]
 
+    # merge cards from ALL zones
     all_cards = pd.DataFrame()
     for cards, size in zip(zone_list, size_list):
-
         df_cards = pd.DataFrame(cards)
         if not df_cards.empty:
             df_cards.drop("name", axis=1, inplace=True)
+            df_cards.sort_values(by=["position"])
             size -= len(df_cards)
 
         df_zero = pd.DataFrame(0, index=range(size), columns=columns)
         df_cards = df_cards.append(df_zero)
-
         all_cards = all_cards.append(df_cards, ignore_index=True)
 
-    hero_array = hero.values.flatten()
-    card_array = all_cards.values.flatten()
+    all_cards.fillna(0, inplace=True)
 
+    # build state array
+    hero_array = hero.values.flatten().astype(np.float)
+    card_array = all_cards.values.flatten().astype(np.float)
     state_array = np.concatenate([hero_array, card_array])
 
     return state_array
+
+
+def _parse_game(game: str) -> np.array:
+    """
+    Parse SabberStone game
+
+    :param game: detailed command line output of the game
+    :return: game dataset
+    """
+    # parse game and get a list of states
+    state_list = _parse(game)
+
+    # build the dataset
+    dataset = np.array([], dtype=np.int64).reshape(0, 240)
+    for state in state_list:
+        state_array = state_to_array(state)
+        if dataset.shape[0] == 0:
+            dataset = state_array[:, np.newaxis].T
+
+        else:
+            state_array = state_array[:, np.newaxis].T
+            dataset = np.append(dataset, state_array, axis=0)
+
+    # the label of each state is: +1 for the winner, 0 for the loser
+    labels = dataset[:, 0].astype(np.int)
+    labels = (labels == labels[-1]).astype(np.int)
+    labels = labels[:, np.newaxis]
+
+    dataset = np.hstack([dataset, labels])
+
+    return dataset
+
+
+def _collapse_states(data: np.array) -> np.array:
+    """
+    Collapse dataset duplicates (duplicated states)
+
+    :param data: data with duplicates
+    :return: data without duplicates
+    """
+    df = pd.DataFrame(data)
+    X = df.iloc[:, :-1]
+    y = df.iloc[:, -1]
+
+    # group duplicated states
+    is_dup_list = X.duplicated(keep=False).values
+    duplicate_indices = np.where(is_dup_list)[0]
+    dup_state_groups = X.iloc[duplicate_indices].groupby(X.columns.tolist()).indices
+
+    # collapse duplicates
+    collapsed_states = X.duplicated(keep="first").values
+    X_dup = X.iloc[collapsed_states]
+    y_dup = np.zeros((sum(collapsed_states), 1))
+    for i, (k, v) in enumerate(dup_state_groups.items()):
+        y_old = y[duplicate_indices[v]]
+        y_dup[i] = np.sum(y_old)
+    dups = np.hstack([X_dup, y_dup])
+
+    # get unique states (rows)
+    X_unique = X.drop_duplicates(keep=False).values
+    y_unique = y.iloc[~is_dup_list].values[:, np.newaxis]
+    uniques = np.hstack([X_unique, y_unique])
+
+    collapsed_data = np.vstack([dups, uniques])
+
+    return collapsed_data
+
+
+def parse_sabberstone_games(file_path: str) -> np.array:
+    """
+    Parse SabberStone games and get a dataset
+
+    :param file_path: path to file containing detailed game information
+    :return: dataset
+    """
+    # read file
+    with open(file_path, "r") as f:
+        cmd_output = f.read()
+
+    # get list of games
+    game_list = cmd_output.split("----- NEW GAME STARTING! -----")
+
+    # build the dataset
+    data = np.array([], dtype=np.int64).reshape(0, 241)
+    for game in game_list[1:]:
+        game_data = _parse_game(game)
+        data = np.append(data, game_data, axis=0)
+
+    # remove duplicated states
+    data = _collapse_states(data)
+
+    return data
 
 
 if __name__ == '__main__':
@@ -250,15 +346,4 @@ if __name__ == '__main__':
         pass
     file_path = "cmd_out.txt"
 
-    state_list = parse_sabberstone_game(file_path)
-
-    dataset = np.array([], dtype=np.int64).reshape(0, 240)
-    for state in state_list:
-        state_array = state_to_array(state)
-
-        if dataset.shape[0] == 0:
-            dataset = state_array[:, np.newaxis].T
-
-        else:
-            state_array = state_array[:, np.newaxis].T
-            dataset = np.append(dataset, state_array, axis=0)
+    data = parse_sabberstone_games(file_path)
