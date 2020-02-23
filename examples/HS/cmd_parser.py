@@ -345,5 +345,10 @@ if __name__ == '__main__':
     except:
         pass
     file_path = "cmd_out.txt"
+    file_out = "parsed_data.csv"
 
+    print("Output will be dumped to \"%s\"..." % file_out)
     data = parse_sabberstone_games(file_path)
+
+    np.savetxt(file_out, data, delimiter=",")
+
