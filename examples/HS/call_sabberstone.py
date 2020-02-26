@@ -20,7 +20,10 @@ def individual_file_to_commandline(ind_file):
     param = param[:-1]
     return param
 
-# as there are some issues with the SabberStone C# projects
+# store current directory
+output_dir = os.path.abspath(os.getcwd())
+
+# as there are some issues with the SabberStone C# projects, let's change working directory
 sabberstone_base_dir = os.path.abspath("../../../HearthstoneAICompetition/core-extensions/SabberStoneCoreAi")
 os.chdir(sabberstone_base_dir)
 
@@ -31,12 +34,12 @@ base_cmd_line = "dotnet run --project SabberStoneCoreAi.csproj"
 
 d1 = "AggroPirateWarrior"
 d2 = "MidrangeJadeShaman"
-number_of_games = 100
+number_of_games = 20
 
 # rest of the command line
 cmd_line = base_cmd_line + " " + "EVA" + " " + d1 + " " + HERO_BY_DECK[d1] + " "
 cmd_line += "AlvaroAgent" + " " + d2 + " " + HERO_BY_DECK[d2] + " "
-cmd_line += str(number_of_games) + " > ../../../../alphazero/examples/HS/cmd_out.txt"
+cmd_line += str(number_of_games) + " > " + os.path.join(output_dir, "cmd_out.txt")
 
 print(cmd_line)
 os.system(cmd_line)
