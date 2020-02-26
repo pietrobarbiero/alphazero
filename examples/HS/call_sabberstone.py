@@ -24,6 +24,10 @@ def individual_file_to_commandline(ind_file):
 output_dir = os.path.abspath(os.getcwd())
 
 # as there are some issues with the SabberStone C# projects, let's change working directory
+try:
+    os.chdir("HS")
+except:
+    pass
 sabberstone_base_dir = os.path.abspath("../../../HearthstoneAICompetition/core-extensions/SabberStoneCoreAi")
 os.chdir(sabberstone_base_dir)
 
@@ -38,7 +42,7 @@ number_of_games = 20
 
 # rest of the command line
 cmd_line = base_cmd_line + " " + "EVA" + " " + d1 + " " + HERO_BY_DECK[d1] + " "
-cmd_line += "AlvaroAgent" + " " + d2 + " " + HERO_BY_DECK[d2] + " "
+cmd_line += "EVA" + " " + d2 + " " + HERO_BY_DECK[d2] + " "
 cmd_line += str(number_of_games) + " > " + os.path.join(output_dir, "cmd_out.txt")
 
 print(cmd_line)
